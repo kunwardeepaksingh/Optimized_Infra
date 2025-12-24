@@ -6,8 +6,8 @@ terraform {
     }
   }
   backend "azurerm" {
-    resource_group_name = "deepika"
-    storage_account_name = "deepikastg"
+    resource_group_name = "deepakrg"
+    storage_account_name = "deepakstg"
     container_name = "deepcont"
     key = "terraform.tfstate"
   }

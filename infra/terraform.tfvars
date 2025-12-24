@@ -78,8 +78,8 @@ vm_x = {
     location                  = "centralindia"
     resource_group_name       = "deepak-rg"
     size                      = "Standard_D2s_v3"
-    admin_username            = "deepak"
-    admin_password            = "Deepak@123"
+    admin_username            = "vmusername"
+    admin_password            = "vmpassname"
     name_net_interface        = "front-nic"
 
     os_disk = {
@@ -105,8 +105,8 @@ vm_x = {
     location                  = "centralindia"
     resource_group_name       = "deepak-rg"
     size                      = "Standard_D2s_v3"
-    admin_username            = "deepak"
-    admin_password            = "Deepak@123"
+    admin_username            = "vmusername"
+    admin_password            = "vmpassname"
     name_net_interface        = "back-nic"
 
     os_disk = {
