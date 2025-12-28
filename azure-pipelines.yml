@@ -105,10 +105,11 @@ stages:
         backendAzureRmStorageAccountName: 'deepakstg'
         backendAzureRmContainerName: 'deepcont'
         backendAzureRmKey: 'terraform.tfstate'
+   
     - task: TerraformTask@5
       inputs:
         provider: 'azurerm'
         command: 'apply'
+        workingDirectory: '$(my_directory)'
         commandOptions: '-auto-approve'
         environmentServiceNameAzureRM: 'sercondeepika'
-         
