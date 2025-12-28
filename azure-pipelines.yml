@@ -1,0 +1,114 @@
+
+trigger:
+- main
+
+pool:
+  name: agentdada
+
+parameters:
+- name: workspace
+  displayName: Workspace
+  type: string
+#   default: 
+  values: 
+  - infra
+
+
+variables:      # pipeline-level
+  my_directory: '$(System.DefaultWorkingDirectory)/infra'
+
+stages:
+
+- stage: terraforminitplan
+  displayName: Terraform Init and Plan
+  jobs:
+  - job: terraformintallerinit
+    displayName: Terraform Init and Plan
+    pool: agentdada
+    steps: 
+    - task: TerraformInstaller@1
+      displayName: Terraform Installer
+      inputs:
+        terraformVersion: 'latest'
+    - task: TerraformTask@5
+      displayName: Terraform init
+      inputs: 
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(my_directory)'
+        backendServiceArm: 'sercondeepika'
+        backendAzureRmOverrideSubscriptionID: '98473d5b-c639-404e-9bf2-91559fe65ff8'
+        backendAzureRmResourceGroupName: 'deepakrg'
+        backendAzureRmStorageAccountName: 'deepakstg'
+        backendAzureRmContainerName: 'deepcont'
+        backendAzureRmKey: 'terraform.tfvars'
+        
+
+    - task: PowerShell@2
+      displayName: Infra Cost
+      inputs:
+        targetType: 'inline'
+        script: |
+          Invoke-WebRequest https://github.com/infracost/infracost/releases/latest/download/infracost-windows-amd64.tar.gz -OutFile infracost.tar.gz
+          tar -xvf infracost.tar.gz
+          .\infracost.exe --version
+          .\infracost.exe auth login
+          .\infracost.exe breakdown --path '$(my_directory)' --format table
+         
+
+    - task: TerraformTask@5
+      displayName: Terraform plan
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(my_directory)'
+        environmentServiceNameAzureRM: 'sercondeepika'
+
+      
+- stage: scanningtfsec
+  jobs:
+    - job: 
+      displayName: Scanning tfsec
+      pool: agentdada
+      steps:
+      - task: tfsec@1
+        inputs:
+          version: 'v1.26.0'
+          dir: '$(my_directory)'
+
+- stage: manualvalidation
+  displayName: Manual validation
+  jobs:
+    - job: manualvalidation
+      displayName: Manual validation
+      pool : server
+      steps:
+      - task: ManualValidation@1
+        inputs:
+          notifyUsers: 'deepaksingh9112021@gmail.com'
+          approvers: 'deepaksingh9112021@gmail.com'          
+
+- stage: terraforminitapply
+  jobs:
+  - job: terraforminitapply
+    displayName: Terraform init & apply
+    pool: agentdada
+    steps:
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(my_directory)'
+        backendServiceArm: 'sercondeepika'
+        backendAzureRmOverrideSubscriptionID: '98473d5b-c639-404e-9bf2-91559fe65ff8'
+        backendAzureRmResourceGroupName: 'deepakrg'
+        backendAzureRmStorageAccountName: 'deepakstg'
+        backendAzureRmContainerName: 'deepcont'
+        backendAzureRmKey: 'terraform.tfstate'
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        commandOptions: '-auto-approve'
+        environmentServiceNameAzureRM: 'sercondeepika'
+         
